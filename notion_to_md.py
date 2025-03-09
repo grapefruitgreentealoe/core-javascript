@@ -49,6 +49,11 @@ def save_markdown_files():
     pages = fetch_notion_pages()
     commit_messages = []
 
+    #  폴더가 없으면 자동 생성
+
+    os.makedirs("blog", exist_ok=True)
+
+
     for page in pages:
         title, content = notion_to_markdown(page)
         filename = f"blog/{title.replace(' ', '_')}.md"
