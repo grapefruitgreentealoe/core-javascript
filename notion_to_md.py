@@ -1,4 +1,6 @@
 import os
+import requests
+import markdownify
 from notion_client import Client
 
 # Notion API 설정
@@ -13,7 +15,7 @@ def fetch_notion_pages():
     return response["results"]
 
 def notion_to_markdown(page):
-    """ 노션 페이지를 Markdown으로 변환 (그대로 가져오기) """
+    """ Notion 페이지를 Markdown으로 변환 (모든 블록 타입 지원) """
     title = page["properties"]["Name"]["title"]
     title_text = title[0]["plain_text"] if title else "Untitled"
 
@@ -21,14 +23,35 @@ def notion_to_markdown(page):
     markdown_content = f"# {title_text}\n\n"
 
     for block in content_blocks:
-        markdown_text = block.get("markdown", None)  # 📌 Markdown이 있으면 그대로 가져옴
-        if markdown_text:
-            markdown_content += markdown_text + "\n\n"
-        else:
-            markdown_content += "**[Unsupported block]**\n\n"  # 지원 안 되는 블록 처리
+        block_type = block["type"]
+        text = block[block_type].get("rich_text", [])
+        
+        if not text:  
+            markdown_content += "\n"  # 빈 블록 처리
+            continue  
+
+        text_content = text[0]["plain_text"]
+
+        # 📌 블록 타입별 Markdown 변환
+        if block_type == "paragraph":
+            markdown_content += text_content + "\n\n"
+        elif block_type == "heading_1":
+            markdown_content += f"# {text_content}\n\n"
+        elif block_type == "heading_2":
+            markdown_content += f"## {text_content}\n\n"
+        elif block_type == "heading_3":
+            markdown_content += f"### {text_content}\n\n"
+        elif block_type == "bulleted_list_item":  # 🔹 리스트 아이템 처리
+            markdown_content += f"- {text_content}\n"
+        elif block_type == "numbered_list_item":  # 🔹 번호 리스트 처리
+            markdown_content += f"1. {text_content}\n"
+        elif block_type == "quote":  # 🔹 인용 블록 처리
+            markdown_content += f"> {text_content}\n\n"
+        elif block_type == "code":  # 🔹 코드 블록 처리
+            language = block["code"].get("language", "plaintext")
+            markdown_content += f"```{language}\n{text_content}\n```\n\n"
 
     return title_text, markdown_content
-
 
 def save_markdown_files():
     """ 노션 데이터를 Markdown 파일로 저장하고 커밋 메시지 생성 """
