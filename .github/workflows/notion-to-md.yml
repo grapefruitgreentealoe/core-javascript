@@ -37,14 +37,9 @@ jobs:
           fi
 
       - name: Commit and push changes
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            
-            git add blog/*.md
-            git commit -m "Auto-sync Notion blog posts" || echo "No changes to commit"
-
-            git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git
-            git push origin main
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add blog/*.md
+          git commit -m "$COMMIT_MSG" || echo "No changes to commit"
+          git push
