@@ -37,11 +37,9 @@ jobs:
           fi
 
       - name: Commit and push changes
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name "grapefruitgreentealoe"
-          git config --global user.email "nammugmuhg@gmail.com"
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
           git add blog/*.md
           git commit -m "$COMMIT_MSG" || echo "No changes to commit"
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git HEAD:main
+          git push
