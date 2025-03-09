@@ -16,22 +16,33 @@ def fetch_notion_pages():
 
 def notion_to_markdown(page):
     """ 노션 페이지를 Markdown으로 변환 """
-    title = page["properties"]["Name"]["title"][0]["plain_text"]
-    content_blocks = notion.blocks.children.list(block_id=page["id"])["results"]
-    
-    markdown_content = f"# {title}\n\n"
-    
-    for block in content_blocks:
-        if block["type"] == "paragraph":
-            markdown_content += block["paragraph"]["rich_text"][0]["plain_text"] + "\n\n"
-        elif block["type"] == "heading_1":
-            markdown_content += f"# {block['heading_1']['rich_text'][0]['plain_text']}\n\n"
-        elif block["type"] == "heading_2":
-            markdown_content += f"## {block['heading_2']['rich_text'][0]['plain_text']}\n\n"
-        elif block["type"] == "heading_3":
-            markdown_content += f"### {block['heading_3']['rich_text'][0]['plain_text']}\n\n"
+    title = page["properties"]["Name"]["title"]
+    title_text = title[0]["plain_text"] if title else "Untitled"
 
-    return title, markdown_content
+    content_blocks = notion.blocks.children.list(block_id=page["id"])["results"]
+    markdown_content = f"# {title_text}\n\n"
+
+    for block in content_blocks:
+        block_type = block["type"]
+
+        # `rich_text`가 없는 경우 예외 처리
+        text = block[block_type].get("rich_text", [])
+        if not text:  
+            continue  # 빈 블록은 무시
+
+        text_content = text[0]["plain_text"]
+
+        if block_type == "paragraph":
+            markdown_content += text_content + "\n\n"
+        elif block_type == "heading_1":
+            markdown_content += f"# {text_content}\n\n"
+        elif block_type == "heading_2":
+            markdown_content += f"## {text_content}\n\n"
+        elif block_type == "heading_3":
+            markdown_content += f"### {text_content}\n\n"
+
+    return title_text, markdown_content
+
 
 def save_markdown_files():
     """ 노션 데이터를 Markdown 파일로 저장하고 커밋 메시지 생성 """
