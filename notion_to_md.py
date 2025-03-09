@@ -15,7 +15,7 @@ def fetch_notion_pages():
     return response["results"]
 
 def notion_to_markdown(page):
-    """ 노션 페이지를 Markdown으로 변환 """
+    """ Notion 페이지를 Markdown으로 변환 (모든 블록 타입 지원) """
     title = page["properties"]["Name"]["title"]
     title_text = title[0]["plain_text"] if title else "Untitled"
 
@@ -24,14 +24,15 @@ def notion_to_markdown(page):
 
     for block in content_blocks:
         block_type = block["type"]
-
-        # `rich_text`가 없는 경우 예외 처리
         text = block[block_type].get("rich_text", [])
+        
         if not text:  
-            continue  # 빈 블록은 무시
+            markdown_content += "\n"  # 빈 블록 처리
+            continue  
 
         text_content = text[0]["plain_text"]
 
+        # 📌 블록 타입별 Markdown 변환
         if block_type == "paragraph":
             markdown_content += text_content + "\n\n"
         elif block_type == "heading_1":
@@ -40,9 +41,17 @@ def notion_to_markdown(page):
             markdown_content += f"## {text_content}\n\n"
         elif block_type == "heading_3":
             markdown_content += f"### {text_content}\n\n"
+        elif block_type == "bulleted_list_item":  # 🔹 리스트 아이템 처리
+            markdown_content += f"- {text_content}\n"
+        elif block_type == "numbered_list_item":  # 🔹 번호 리스트 처리
+            markdown_content += f"1. {text_content}\n"
+        elif block_type == "quote":  # 🔹 인용 블록 처리
+            markdown_content += f"> {text_content}\n\n"
+        elif block_type == "code":  # 🔹 코드 블록 처리
+            language = block["code"].get("language", "plaintext")
+            markdown_content += f"```{language}\n{text_content}\n```\n\n"
 
     return title_text, markdown_content
-
 
 def save_markdown_files():
     """ 노션 데이터를 Markdown 파일로 저장하고 커밋 메시지 생성 """
