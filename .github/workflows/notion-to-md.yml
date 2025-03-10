@@ -2,8 +2,8 @@ name: Notion to Markdown Sync
 
 on:
   schedule:
-    - cron: '0 7 * * *'  # 매일 7시 실행 (필요에 맞게 조절)
-  workflow_dispatch:  # 수동 실행 가능
+    - cron: "0 7 * * *" # 매일 7시 실행 (필요에 맞게 조절)
+  workflow_dispatch: # 수동 실행 가능
 
 jobs:
   sync:
@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install dependencies
         run: |
