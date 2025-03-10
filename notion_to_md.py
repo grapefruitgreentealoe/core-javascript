@@ -18,8 +18,8 @@ DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
 notion = Client(auth=NOTION_API_KEY)
 
 # ✅ 마지막 실행 시간 기록 파일
-LAST_UPDATED_FILE = "last_updated.txt"
-
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+LAST_UPDATED_FILE = os.path.join(BASE_DIR, "last_updated.txt")
 
 # ✅ 마지막 실행 시간 읽기
 def read_last_run_time():
@@ -259,11 +259,13 @@ def save_markdown_files(pages):
         
         commit_messages.append(f"Updated: {title}")  # 커밋 메시지로 사용
 
-    # 커밋 메시지를 저장
-    with open("commit_messages.txt", "w", encoding="utf-8") as f:
+    COMMIT_MESSAGE_FILE = os.path.join(BASE_DIR, "commit_messages.txt")
+
+    with open(COMMIT_MESSAGE_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(commit_messages))
 
     print("✅ Markdown 변환 완료! 커밋 메시지 저장 완료!")
+
 
 def update_readme():
     blog_dir = "blog"
@@ -304,6 +306,5 @@ if __name__ == "__main__":
         update_readme()
     else:
         print("⚠️ 새로운 업데이트가 없습니다.")
-
     write_current_run_time()
 
