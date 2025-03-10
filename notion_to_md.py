@@ -1,10 +1,16 @@
 import os
 import re
 from notion_client import Client
-from dotenv import load_dotenv
 
-# ✅ .env 로드
-load_dotenv()
+# 환경 변수로 로컬 실행인지 확인 (기본은 False로 두기)
+IS_LOCAL = os.getenv("IS_LOCAL", "false").lower() == "true"
+
+if IS_LOCAL:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("✅ [로컬 실행] .env 파일 로드 완료")
+else:
+    print("🚀 [CI/CD 실행] .env 파일 무시, 환경변수 직접 사용")
 
 NOTION_API_KEY = os.getenv("NOTION_API_KEY")
 DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
