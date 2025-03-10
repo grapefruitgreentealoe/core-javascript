@@ -2,7 +2,7 @@ name: Notion to Markdown Sync
 
 on:
   schedule:
-    - cron: '0 * * * *'  # 매시간 실행 (필요에 맞게 조절)
+    - cron: '0 7 * * *'  # 매일 7시 실행 (필요에 맞게 조절)
   workflow_dispatch:  # 수동 실행 가능
 
 jobs:
