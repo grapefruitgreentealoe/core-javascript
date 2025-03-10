@@ -1,1 +1,5 @@
-# core-javascript
+# 📚 블로그 목록
+
+- [1.데이터 타입](blog/1.데이터_타입.md)
+- [2. 실행 컨텍스트](blog/2._실행_컨텍스트.md)
+- [3. this](blog/3._this.md)

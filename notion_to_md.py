@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime, timedelta, timezone
 from notion_client import Client
 
 # 환경 변수로 로컬 실행인지 확인 (기본은 False로 두기)
@@ -15,6 +16,45 @@ else:
 NOTION_API_KEY = os.getenv("NOTION_API_KEY")
 DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
 notion = Client(auth=NOTION_API_KEY)
+
+# ✅ 마지막 실행 시간 기록 파일
+LAST_UPDATED_FILE = "last_updated.txt"
+
+
+# ✅ 마지막 실행 시간 읽기
+def read_last_run_time():
+    try:
+        with open(LAST_UPDATED_FILE, "r") as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return "2000-01-01T00:00:00.000+09:00"  # 기본값 KST
+
+
+
+# ✅ 현재 시간 기록 (작업 끝난 후 호출)
+def write_current_run_time():
+    KST = timezone(timedelta(hours=9))  # ✅ +9시간 timezone 정의
+    now = datetime.now(KST)  # KST 기준 시간
+    now_kst = now.isoformat(timespec='milliseconds')  # 밀리초 포함
+    with open(LAST_UPDATED_FILE, "w") as f:
+        f.write(now_kst)
+
+
+# ✅ 최근 수정된 페이지만 가져오기
+def fetch_recent_notion_pages(last_run_time):
+    response = notion.databases.query(
+        database_id=DATABASE_ID,
+        filter={
+        "timestamp": "last_edited_time",  # 어떤 시간인지 명시
+        "last_edited_time": {
+            "on_or_after": last_run_time  # 기준 시간 이후
+            }
+        }
+    )
+    return response["results"]
+
+
+
 
 # ✅ Notion 데이터베이스에서 페이지 목록 가져오기 (상단 이동)
 def fetch_notion_pages():
@@ -202,9 +242,8 @@ def notion_to_markdown(page):
     return title_text, markdown_content
 
 
-def save_markdown_files():
+def save_markdown_files(pages):
     """ 노션 데이터를 Markdown 파일로 저장하고 커밋 메시지 생성 """
-    pages = fetch_notion_pages()
     commit_messages = []
 
     #  폴더가 없으면 자동 생성
@@ -254,6 +293,17 @@ def update_readme():
 
 
 if __name__ == "__main__":
-    save_markdown_files()
-    update_readme()
+    last_run_time = read_last_run_time()
+    print(f"🕒 마지막 실행 시간: {last_run_time}")
+
+    pages = fetch_recent_notion_pages(last_run_time)
+
+    if pages:
+        print(f"✅ {len(pages)}개의 글이 업데이트됨. 변환 시작!")
+        save_markdown_files(pages)
+        update_readme()
+    else:
+        print("⚠️ 새로운 업데이트가 없습니다.")
+
+    write_current_run_time()
 
