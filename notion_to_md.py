@@ -220,5 +220,34 @@ def save_markdown_files():
 
     print("✅ Markdown 변환 완료! 커밋 메시지 저장 완료!")
 
+def update_readme():
+    blog_dir = "blog"
+    readme_path = "README.md"
+
+    # blog 폴더 안 모든 .md 파일 가져오기
+    md_files = [f for f in os.listdir(blog_dir) if f.endswith(".md")]
+    
+    # 파일명 정렬
+    md_files.sort()
+
+    # README.md 내용 시작
+    readme_content = "# 📚 블로그 목록\n\n"
+
+    # 파일 목록 추가
+    for file in md_files:
+        # 확장자 제거하고 제목 만들기
+        title = os.path.splitext(file)[0].replace("_", " ")
+        # 링크로 연결
+        readme_content += f"- [{title}](blog/{file})\n"
+
+    # 파일 저장
+    with open(readme_path, "w", encoding="utf-8") as f:
+        f.write(readme_content)
+
+    print("✅ README.md 업데이트 완료!")
+
+
 if __name__ == "__main__":
     save_markdown_files()
+    update_readme()
+
