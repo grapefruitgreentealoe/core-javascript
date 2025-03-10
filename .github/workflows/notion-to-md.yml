@@ -40,6 +40,6 @@ jobs:
         run: |
           git config --global user.name "grapefruitgreentealoe"
           git config --global user.email "nammugmuhg@gmail.com"
-          git add blog/*.md
+          git add blog/*.md commit_messages.txt last_updated.txt 
           git commit -m "$COMMIT_MSG" || echo "No changes to commit"
           git push
